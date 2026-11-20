@@ -1,0 +1,103 @@
+version: 2.1
+
+jobs:
+  # 1. Fast checks before the expensive job
+  checks:
+    docker:
+      - image: cimg/node:lts
+    steps:
+      - checkout
+      - run: npm ci
+      - run:
+          name: Typecheck
+          command: npm run typecheck
+
+  # 2. Start both apps and run the tests in 2 parallel shards
+  e2e:
+    machine:
+      image: ubuntu-2204:current # a full VM, so docker compose works
+    parallelism: 2
+    environment:
+      WEB_URL: http://localhost:5173
+      API_URL: http://localhost:8000
+      GH_USER: your-github-username
+    steps:
+      - checkout
+      - run:
+          name: Clone the API and web repos
+          command: |
+            git clone --depth 1 https://github.com/$GH_USER/qa-practice-api.git ~/qa-practice-api
+            git clone --depth 1 https://github.com/$GH_USER/qa-practice-web.git ~/qa-practice-web
+      - run:
+          name: Start the API and load the baseline
+          command: |
+            cd ~/qa-practice-api
+            docker compose up -d --build
+            docker compose exec -T api python manage.py makemigrations compliance
+            docker compose exec -T api python manage.py migrate
+            docker compose exec -T api python manage.py seed
+      - run:
+          name: Start the web app
+          command: cd ~/qa-practice-web && docker compose up -d --build
+      - run:
+          name: Wait until both apps respond
+          command: |
+            timeout 180 bash -c 'until curl -sf $API_URL/api/health/; do sleep 3; done'
+            timeout 180 bash -c 'until curl -sf $WEB_URL > /dev/null; do sleep 3; done'
+      - run:
+          name: Install Node (from .nvmrc), dependencies and Chromium
+          command: |
+            nvm install
+            nvm alias default "$(cat .nvmrc)"
+            npm ci
+            npx playwright install --with-deps chromium
+      - run:
+          name: Run this machine's shard
+          command: |
+            mkdir -p shard-status
+            npx playwright test --shard=$((CIRCLE_NODE_INDEX + 1))/$CIRCLE_NODE_TOTAL \
+              || touch shard-status/failed-$CIRCLE_NODE_INDEX
+      - run:
+          name: Collect the blob report
+          when: always
+          command: |
+            mkdir -p blob-reports
+            mv blob-report/*.zip blob-reports/shard-$CIRCLE_NODE_INDEX.zip
+      - store_test_results:
+          path: test-results
+      - store_artifacts:
+          path: test-results # traces, screenshots, videos of failures
+      - persist_to_workspace:
+          root: .
+          paths:
+            - blob-reports
+            - shard-status
+
+  # 3. Merge the shards into one HTML report, then fail if any shard failed
+  report:
+    docker:
+      - image: cimg/node:lts
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run: npm ci
+      - run: npx playwright merge-reports --reporter html ./blob-reports
+      - store_artifacts:
+          path: playwright-report
+      - run:
+          name: Fail the pipeline if tests failed
+          command: |
+            if ls shard-status/failed-* 1>/dev/null 2>&1; then
+              echo "Tests failed. See the Tests tab and the playwright-report artifact."
+              exit 1
+            fi
+
+workflows:
+  e2e:
+    jobs:
+      - checks
+      - e2e:
+          requires: [checks]
+      - report:
+          requires: [e2e]

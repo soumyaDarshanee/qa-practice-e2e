@@ -1,0 +1,1325 @@
+openapi: 3.0.3
+info:
+  title: QA Practice – Supply Chain Compliance API
+  version: 1.0.0
+  description: 'Practice API for test automation: suppliers, certificates and audits
+    per organisation. Authenticate with POST /api/auth/login/ and send `Authorization:
+    Token <token>`.'
+paths:
+  /api/audits/:
+    get:
+      operationId: audits_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: result
+        schema:
+          type: string
+          enum:
+          - fail
+          - pass
+      - in: query
+        name: supplier
+        schema:
+          type: integer
+      tags:
+      - audits
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAuditList'
+          description: ''
+    post:
+      operationId: audits_create
+      tags:
+      - audits
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuditRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AuditRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AuditRequest'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Audit'
+          description: ''
+  /api/audits/{id}/:
+    get:
+      operationId: audits_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - audits
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Audit'
+          description: ''
+    put:
+      operationId: audits_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - audits
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuditRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AuditRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AuditRequest'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Audit'
+          description: ''
+    patch:
+      operationId: audits_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - audits
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAuditRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAuditRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAuditRequest'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Audit'
+          description: ''
+    delete:
+      operationId: audits_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - audits
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/auth/login/:
+    post:
+      operationId: auth_login_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+          description: ''
+  /api/auth/logout/:
+    post:
+      operationId: auth_logout_create
+      tags:
+      - auth
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/auth/me/:
+    get:
+      operationId: auth_me_retrieve
+      tags:
+      - auth
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Me'
+          description: ''
+  /api/auth/register/:
+    post:
+      operationId: auth_register_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+          description: ''
+  /api/certificates/:
+    get:
+      operationId: certificates_list
+      parameters:
+      - in: query
+        name: certificate_type
+        schema:
+          type: string
+          enum:
+          - brcgs
+          - fairtrade
+          - globalgap
+          - iso_14001
+          - iso_9001
+          - organic_eu
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - expired
+          - expiring
+          - valid
+      - in: query
+        name: supplier
+        schema:
+          type: integer
+      tags:
+      - certificates
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCertificateList'
+          description: ''
+    post:
+      operationId: certificates_create
+      tags:
+      - certificates
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CertificateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CertificateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CertificateRequest'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Certificate'
+          description: ''
+  /api/certificates/{id}/:
+    get:
+      operationId: certificates_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - certificates
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Certificate'
+          description: ''
+    put:
+      operationId: certificates_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - certificates
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CertificateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CertificateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CertificateRequest'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Certificate'
+          description: ''
+    patch:
+      operationId: certificates_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - certificates
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCertificateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCertificateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCertificateRequest'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Certificate'
+          description: ''
+    delete:
+      operationId: certificates_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - certificates
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/countries/:
+    get:
+      operationId: countries_list
+      parameters:
+      - in: query
+        name: region
+        schema:
+          type: string
+        description: Filter by region code, e.g. EU
+      tags:
+      - reference data
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Country'
+          description: ''
+  /api/countries/{id}/:
+    get:
+      operationId: countries_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this country.
+        required: true
+      tags:
+      - reference data
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Country'
+          description: ''
+  /api/dashboard/:
+    get:
+      operationId: dashboard_retrieve
+      tags:
+      - dashboard
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dashboard'
+          description: ''
+  /api/e2e/reset/:
+    post:
+      operationId: e2e_reset_create
+      tags:
+      - e2e
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ResetRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ResetRequest'
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/e2e/seed-status/:
+    get:
+      operationId: e2e_seed_status_retrieve
+      description: 'Fail-fast check for a setup project: is the baseline seed loaded?'
+      tags:
+      - e2e
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SeedStatus'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SeedStatus'
+          description: ''
+  /api/e2e/users/:
+    post:
+      operationId: e2e_users_create
+      description: Create a fresh, unique user (and token). Handy for account pools.
+      tags:
+      - e2e
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserFactoryRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserFactoryRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserFactoryRequest'
+      security:
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+          description: ''
+  /api/health/:
+    get:
+      operationId: health_retrieve
+      tags:
+      - health
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/regions/:
+    get:
+      operationId: regions_list
+      tags:
+      - reference data
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Region'
+          description: ''
+  /api/regions/{id}/:
+    get:
+      operationId: regions_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this region.
+        required: true
+      tags:
+      - reference data
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Region'
+          description: ''
+  /api/suppliers/:
+    get:
+      operationId: suppliers_list
+      parameters:
+      - in: query
+        name: country
+        schema:
+          type: string
+        description: ISO country code, e.g. NL
+      - in: query
+        name: ordering
+        schema:
+          type: string
+          enum:
+          - -created_at
+          - -name
+          - -risk_level
+          - -status
+          - created_at
+          - name
+          - risk_level
+          - status
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: risk_level
+        schema:
+          type: string
+          enum:
+          - high
+          - low
+          - medium
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search in name, email and contact name
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - active
+          - blocked
+          - inactive
+      tags:
+      - suppliers
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSupplierList'
+          description: ''
+    post:
+      operationId: suppliers_create
+      tags:
+      - suppliers
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SupplierRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SupplierRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SupplierRequest'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Supplier'
+          description: ''
+  /api/suppliers/{id}/:
+    get:
+      operationId: suppliers_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - suppliers
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Supplier'
+          description: ''
+    put:
+      operationId: suppliers_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - suppliers
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SupplierRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SupplierRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SupplierRequest'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Supplier'
+          description: ''
+    patch:
+      operationId: suppliers_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - suppliers
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedSupplierRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedSupplierRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedSupplierRequest'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Supplier'
+          description: ''
+    delete:
+      operationId: suppliers_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - suppliers
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+components:
+  schemas:
+    Audit:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        supplier:
+          type: integer
+        supplier_name:
+          type: string
+          readOnly: true
+        audit_date:
+          type: string
+          format: date
+        auditor:
+          type: string
+          maxLength: 200
+        score:
+          type: integer
+          maximum: 100
+          minimum: 0
+        result:
+          type: string
+          readOnly: true
+        notes:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - audit_date
+      - auditor
+      - created_at
+      - id
+      - result
+      - score
+      - supplier
+      - supplier_name
+    AuditRequest:
+      type: object
+      properties:
+        supplier:
+          type: integer
+        audit_date:
+          type: string
+          format: date
+        auditor:
+          type: string
+          minLength: 1
+          maxLength: 200
+        score:
+          type: integer
+          maximum: 100
+          minimum: 0
+        notes:
+          type: string
+      required:
+      - audit_date
+      - auditor
+      - score
+      - supplier
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: '#/components/schemas/Me'
+      required:
+      - token
+      - user
+    Certificate:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        supplier:
+          type: integer
+        supplier_name:
+          type: string
+          readOnly: true
+        certificate_type:
+          $ref: '#/components/schemas/CertificateTypeEnum'
+        certificate_type_display:
+          type: string
+          readOnly: true
+        certificate_number:
+          type: string
+          maxLength: 50
+        issue_date:
+          type: string
+          format: date
+        expiry_date:
+          type: string
+          format: date
+        status:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - certificate_number
+      - certificate_type
+      - certificate_type_display
+      - created_at
+      - expiry_date
+      - id
+      - issue_date
+      - status
+      - supplier
+      - supplier_name
+    CertificateRequest:
+      type: object
+      properties:
+        supplier:
+          type: integer
+        certificate_type:
+          $ref: '#/components/schemas/CertificateTypeEnum'
+        certificate_number:
+          type: string
+          minLength: 1
+          maxLength: 50
+        issue_date:
+          type: string
+          format: date
+        expiry_date:
+          type: string
+          format: date
+      required:
+      - certificate_number
+      - certificate_type
+      - expiry_date
+      - issue_date
+      - supplier
+    CertificateTypeEnum:
+      enum:
+      - globalgap
+      - iso_9001
+      - iso_14001
+      - brcgs
+      - organic_eu
+      - fairtrade
+      type: string
+      description: |-
+        * `globalgap` - GLOBALG.A.P.
+        * `iso_9001` - ISO 9001
+        * `iso_14001` - ISO 14001
+        * `brcgs` - BRCGS
+        * `organic_eu` - EU Organic
+        * `fairtrade` - Fairtrade
+    Country:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        iso_code:
+          type: string
+          maxLength: 2
+        name:
+          type: string
+          maxLength: 100
+        region:
+          allOf:
+          - $ref: '#/components/schemas/Region'
+          readOnly: true
+      required:
+      - id
+      - iso_code
+      - name
+      - region
+    Dashboard:
+      type: object
+      properties:
+        suppliers:
+          type: object
+          additionalProperties:
+            type: integer
+        certificates:
+          type: object
+          additionalProperties:
+            type: integer
+        audits:
+          type: object
+          additionalProperties: {}
+      required:
+      - audits
+      - certificates
+      - suppliers
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - email
+      - password
+    Me:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+          format: email
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+        organisation:
+          $ref: '#/components/schemas/Organisation'
+      required:
+      - email
+      - id
+      - organisation
+      - role
+    Organisation:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+      required:
+      - id
+      - name
+    PaginatedAuditList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Audit'
+    PaginatedCertificateList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Certificate'
+    PaginatedSupplierList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Supplier'
+    PatchedAuditRequest:
+      type: object
+      properties:
+        supplier:
+          type: integer
+        audit_date:
+          type: string
+          format: date
+        auditor:
+          type: string
+          minLength: 1
+          maxLength: 200
+        score:
+          type: integer
+          maximum: 100
+          minimum: 0
+        notes:
+          type: string
+    PatchedCertificateRequest:
+      type: object
+      properties:
+        supplier:
+          type: integer
+        certificate_type:
+          $ref: '#/components/schemas/CertificateTypeEnum'
+        certificate_number:
+          type: string
+          minLength: 1
+          maxLength: 50
+        issue_date:
+          type: string
+          format: date
+        expiry_date:
+          type: string
+          format: date
+    PatchedSupplierRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 254
+        contact_name:
+          type: string
+          maxLength: 200
+        country:
+          type: string
+          minLength: 1
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        risk_level:
+          $ref: '#/components/schemas/RiskLevelEnum'
+    Region:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        code:
+          type: string
+          maxLength: 10
+        name:
+          type: string
+          maxLength: 100
+      required:
+      - code
+      - id
+      - name
+    RegisterRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+        organisation_name:
+          type: string
+          minLength: 1
+          maxLength: 200
+      required:
+      - email
+      - organisation_name
+      - password
+    ResetRequest:
+      type: object
+      properties:
+        sample_data:
+          type: boolean
+          default: false
+    RiskLevelEnum:
+      enum:
+      - low
+      - medium
+      - high
+      type: string
+      description: |-
+        * `low` - Low
+        * `medium` - Medium
+        * `high` - High
+    RoleEnum:
+      enum:
+      - admin
+      - viewer
+      type: string
+      description: |-
+        * `admin` - Admin
+        * `viewer` - Viewer
+    SeedStatus:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        regions:
+          type: integer
+        countries:
+          type: integer
+        missing_regions:
+          type: array
+          items:
+            type: string
+        missing_users:
+          type: array
+          items:
+            type: string
+      required:
+      - countries
+      - missing_regions
+      - missing_users
+      - ok
+      - regions
+    StatusEnum:
+      enum:
+      - active
+      - inactive
+      - blocked
+      type: string
+      description: |-
+        * `active` - Active
+        * `inactive` - Inactive
+        * `blocked` - Blocked
+    Supplier:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        contact_name:
+          type: string
+          maxLength: 200
+        country:
+          type: string
+        country_name:
+          type: string
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        risk_level:
+          $ref: '#/components/schemas/RiskLevelEnum'
+        certificate_count:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - certificate_count
+      - country
+      - country_name
+      - created_at
+      - email
+      - id
+      - name
+      - updated_at
+    SupplierRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 254
+        contact_name:
+          type: string
+          maxLength: 200
+        country:
+          type: string
+          minLength: 1
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        risk_level:
+          $ref: '#/components/schemas/RiskLevelEnum'
+      required:
+      - country
+      - email
+      - name
+    UserFactoryRequest:
+      type: object
+      properties:
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          default: admin
+        organisation_id:
+          type: integer
+          description: Join an existing organisation. Omit to create a new one.
+        organisation_name:
+          type: string
+          minLength: 1
+          maxLength: 200
+  securitySchemes:
+    tokenAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Token-based authentication with required prefix "Token"
